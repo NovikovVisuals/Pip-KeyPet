@@ -32,7 +32,8 @@
 #include <time.h>
 
 #define HIST_N (24 * 60)
-typedef struct { int32_t t; uint8_t mood, need[5], why; int8_t day, v; uint8_t asleep, pad[2]; } hist_t; /* 16 bytes */
+typedef struct { int32_t t; uint8_t mood, need[5], why; int8_t day, v; uint8_t asleep, tag[2]; } hist_t; /* 16 bytes */
+#define HIST_TAG(h) ((h).tag[0] == 'P' && (h).tag[1] == 'h') /* ours: the partition may hold another firmware's bytes */
 _Static_assert(sizeof(hist_t) == 16, "a flash slot");
 static hist_t *hist;
 static int hist_n, hist_at;
@@ -51,13 +52,13 @@ static void hist_load(void)
     if (!all || esp_partition_read(ring, 0, all, RING_SLOTS * sizeof *all) != ESP_OK) { free(all); return; }
     int newest = -1;
     for (int i = 0; i < RING_SLOTS; i++)
-        if (all[i].t > 1735689600 && all[i].t != -1 && (newest < 0 || all[i].t > all[newest].t)) newest = i;
+        if (HIST_TAG(all[i]) && all[i].t > 1735689600 && (newest < 0 || all[i].t > all[newest].t)) newest = i;
     ring_next = newest < 0 ? 0 : (newest + 1) % RING_SLOTS;
     /* the slots before the newest, oldest first, as long as time runs forward */
     int n = 0, start = newest;
     while (newest >= 0 && n + 1 < HIST_N) {
         int prev = (start - 1 + RING_SLOTS) % RING_SLOTS;
-        if (n + 1 >= RING_SLOTS || all[prev].t <= 1735689600 || all[prev].t >= all[start].t) break;
+        if (n + 1 >= RING_SLOTS || !HIST_TAG(all[prev]) || all[prev].t <= 1735689600 || all[prev].t >= all[start].t) break;
         start = prev, n++;
     }
     if (newest >= 0 && (hist = heap_caps_calloc(HIST_N, sizeof *hist, MALLOC_CAP_SPIRAM)))
@@ -128,7 +129,7 @@ static void hist_add(void)
     pet_mood_why(p, tz_min, &w);
     hist_t *h = &hist[hist_at];
     *h = (hist_t){(int32_t)time(NULL), (uint8_t)pip_find_mood(in.mood), {0}, (uint8_t)(w.kind * 16 + w.which),
-                  (int8_t)(p->day_mood * 100), (int8_t)(pet_valence(p) * 100), p->asleep, {0}};
+                  (int8_t)(p->day_mood * 100), (int8_t)(pet_valence(p) * 100), p->asleep, {'P', 'h'}};
     const float n[5] = {p->food, p->energy, p->fun, p->love, p->walk};
     for (int i = 0; i < 5; i++) h->need[i] = (uint8_t)(n[i] * 255);
     ring_put(h);
