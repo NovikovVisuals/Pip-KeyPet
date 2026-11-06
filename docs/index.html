@@ -427,7 +427,13 @@ $('flash').onclick = async () => {
   try {
     $('flashState').textContent = 'Готовлюсь...';
     const {ESPLoader, Transport} = await import('https://unpkg.com/esptool-js@0.6.1/bundle.js');
-    const p = (await closePort()) || await navigator.serial.requestPort({filters: [{usbVendorId: 0x303a}]});
+    /* ask Pip to show "Обновление" first: the screen keeps that frame while the chip is in the flasher.
+       Firmware that is not Pip's (a factory one, an empty chip) never answers: then just go on after a few seconds. */
+    if (!port) await openPort(await navigator.serial.requestPort({filters: [{usbVendorId: 0x303a}]}));
+    $('flashState').textContent = 'Связываюсь с Пипом...';
+    for (let t = 0; !cfg && t < 60; t++) await new Promise(r => setTimeout(r, 100));
+    if (cfg) { await send('update'); await new Promise(r => setTimeout(r, 600)); }
+    const p = await closePort();
     const transport = new Transport(p, true);
     const loader = new ESPLoader({transport, baudrate: 921600, terminal: {clean() {}, writeLine() {}, write() {}}});
     $('flashState').textContent = 'Связываюсь с брелоком...';

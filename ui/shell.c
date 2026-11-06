@@ -24,6 +24,7 @@ static struct {
     lv_obj_t *pip_scr, *menu_scr, *app_scr, *name;
     lv_obj_t *icons[24], *rows[24], *marker;
     lv_obj_t *bat, *bat_fill; /* the battery at the top of the menu */
+    bool updating;            /* shell_updating(): the screen stays lit until the reset */
     lv_obj_t *lens, *lens_rows[24], *lens_cursor, *chrome, *head, *scroll; /* the list's plate; the terminal's header and scroll cells */
     th_cell_t scroll_cells[24];
     int tick_row; /* tick_row: the wheel clicks each time a new row reaches the middle */
@@ -650,6 +651,22 @@ void shell_set_theme(int theme)
     }
 }
 
+/* The panel is about to write new firmware: say so on top of everything. The chip then sits in the flasher and draws
+   nothing, but the panel keeps its last frame, so this stays on the glass until the new firmware boots. */
+void shell_updating(void)
+{
+    if (sh.updating) return;
+    sh.updating = true;
+    pip_wake();
+    lv_obj_t *o = lv_obj_create(lv_layer_top());
+    lv_obj_remove_style_all(o);
+    lv_obj_set_size(o, SCR, SCR);
+    th_screen(o);
+    lv_obj_add_flag(o, LV_OBJ_FLAG_CLICKABLE); /* swallows touches */
+    th_text_at(o, th->title ? th->title : th->body, th->text, th_label("Обновление"), -1, 176);
+    th_text_at(o, th->small, th->accent, th_label("Не отключай кабель"), -1, 252);
+}
+
 void shell_home(void)
 {
     if (lv_screen_active() == sh.pip_scr) return;
@@ -707,7 +724,7 @@ void shell_gyro(float gx, float gy, float gz, float dt)
 void shell_imu(float ax, float ay, float az, float dt)
 {
     bool awake = sh.open >= 0 && apps[sh.open].awake;
-    pip_hold_awake(awake);
+    pip_hold_awake(awake || sh.updating);
     if (!pip_display_on() && lv_screen_active() != sh.pip_scr && !awake && !phone_where()) shell_home(); /* asleep: back to his face */
     pip_shake_ok(sh.open < 0 || !apps[sh.open].imu); /* shaking a die is not shaking him */
     pip_imu(ax, ay, az, dt);

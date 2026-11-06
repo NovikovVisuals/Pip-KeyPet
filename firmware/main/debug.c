@@ -280,6 +280,7 @@ static void command(char *line)
     else if (!strcmp(c, "home")) shell_home();
     else if (!strcmp(c, "btn") && n > 1) shell_button((int)a1), shell_button_up((int)a1); /* a press, let go at once */
     else if (!strcmp(c, "meet")) pip_meet();
+    else if (!strcmp(c, "update")) shell_updating(); /* the panel flashes next */
     else if (!strcmp(c, "dev")) pip_dev(n > 1 ? a1 != 0 : !pip_dev_on()); /* the developer overlay */
     else if (!strcmp(c, "feed")) pip_action(PIP_ACT_FEED);
     else if (!strcmp(c, "play")) pip_action(PIP_ACT_PLAY);

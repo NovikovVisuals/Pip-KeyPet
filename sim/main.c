@@ -21,6 +21,7 @@
                  L<0|1|2> N C<0|1> M<0|1>  the fake iPhone: link off/pairing/on, a notification, a call, music
                  X<0|1|2>       a fake computer for the remote: gone, asks to pair, paired and back
                  g<gx>,<gy>,<gz> gyroscope, deg/s, device axes, held until changed
+                 Z              "Обновление" on top: the panel is about to flash
    .png saves the last frame. Prints pip's status at the end. --wav out.wav also records Pip's voice (16 kHz mono). */
 #include "fakephone.h"
 #include "mic.h"
@@ -116,6 +117,7 @@ static void run_event(const char *ev)
         if ((boot_hold = (float)atof(ev + 1)) <= 0) shell_button_up(PIP_BTN_BOOT);
     }
     else if (ev[0] == 'P') shell_button(PIP_BTN_PWR);
+    else if (ev[0] == 'Z') shell_updating();
     else if (ev[0] == 'Y') shell_set_menu_style((shell_menu_style() + 1) % 3);
     else if (ev[0] == 'H') shell_set_theme(atoi(ev + 1));
     else if (ev[0] == 'L' || ev[0] == 'N' || ev[0] == 'C' || ev[0] == 'M') fake_phone(ev[0], atoi(ev + 1)); /* the fake iPhone */

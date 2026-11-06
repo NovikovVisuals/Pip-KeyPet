@@ -282,6 +282,8 @@ _, st = run("0.05:H1 0:a0,0,1 34:a0,0.6,0.8", 36)
 ok &= check("asleep: picked up (turned) wakes him", st["display"] == "1", st)
 _, st = run("0.05:H1 0.3:obadge", 36)
 ok &= check("the badge holds him awake", (st["display"], st["screen"]) == ("1", "badge"), st)
+img, st = run("0.3:Z", 40); img = img.convert("RGB")
+ok &= check("updating: the notice stays lit until the reset", st["display"] == "1" and img.getpixel((233, 140)) == (0, 0, 0) and max(img.crop((120, 170, 346, 210)).getdata()) > (200, 200, 200), st)
 for t in range(4):
     bad = []
     for a in app_ids:
