@@ -14,6 +14,11 @@
 
 ## Как прошить своего Пипа (3 шага)
 
+**Самый простой путь:** открой в Chrome или Edge **https://novikovvisuals.github.io/Pip-KeyPet/**, подключи брелок
+кабелем, нажми «Подключить по кабелю», затем вкладка **«Прошить / обновить»** → **«Прошить»**. Ничего скачивать не надо.
+
+Без интернета — так:
+
 1. **Скачай Пипа.** На этой странице нажми зелёную кнопку **Code → Download ZIP** и распакуй архив.
 2. **Открой панель.** В распакованной папке дважды щёлкни файл для своей системы:
    - Windows — **`Pip-Windows.bat`**
@@ -70,7 +75,8 @@ tools/release.sh                                                # прошивк
 
 ## English
 
-**Pip** is a pet living in a round keychain (Waveshare ESP32-S3-Touch-AMOLED-1.75C). To flash it: download this
+**Pip** is a pet living in a round keychain (Waveshare ESP32-S3-Touch-AMOLED-1.75C). Easiest: open
+**https://novikovvisuals.github.io/Pip-KeyPet/** in Chrome or Edge. Offline: download this
 repository as a ZIP, unzip, double-click `Pip-Windows.bat`, `Pip-Mac.command` or `Pip-Linux.sh`, plug the keychain in
 with a USB-C data cable, open **«Прошить / обновить»** (Flash / update) and press **«Прошить»** (Flash), choosing
 **USB JTAG/serial**. Chrome or Edge is required (Web Serial). Settings — your badge name, your QR links, sleep timer,
