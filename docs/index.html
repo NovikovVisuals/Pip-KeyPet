@@ -444,7 +444,12 @@ $('flash').onclick = async () => {
         $('flashState').textContent = 'Прошиваю... не отключай кабель';
       },
     });
-    await loader.after('hard_reset');
+    /* esptool-js 0.6.1 'hard_reset' only lets RTS go, it never pulls it: the chip stayed in the flasher with the last
+       frame on screen. Pull EN low with RTS (DTR low keeps GPIO0 high: a normal boot), then let go. */
+    await transport.setDTR(false);
+    await transport.setRTS(true);
+    await new Promise(r => setTimeout(r, 150));
+    await transport.setRTS(false);
     await transport.disconnect();
     $('prog').style.width = '100%';
     $('flashState').textContent = 'Готово! Пип перезагружается. Через несколько секунд нажми «Подключить по кабелю», чтобы настроить его.';
